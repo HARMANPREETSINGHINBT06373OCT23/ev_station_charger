@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EV Charging Stations - SmartCharge</title>
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+  />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #000000, #1c1c1c);
+      color: #f8f8f8;
+    }
+
+    .sidebar {
+      height: 100vh;
+      width: 220px;
+      position: fixed;
+      background-color: #111;
+      padding-top: 20px;
+      border-right: 3px solid #e50914;
+      overflow-y: auto;
+    }
+
+    .sidebar a {
+      display: block;
+      color: #ccc;
+      padding: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #e50914;
+      color: white;
+    }
+
+    .main {
+      margin-left: 230px;
+      padding: 20px;
+      max-width: 1000px;
+    }
+
+    .section {
+      border: 2px solid #444;
+      margin-bottom: 2em;
+      padding: 1em;
+      border-radius: 10px;
+      background: #1f1f1f;
+    }
+
+    .section h2 {
+      color: #facc15;
+      margin-bottom: 20px;
+    }
+
+    .section img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+
+    .btn-info {
+      background-color: #1f80e0;
+      border: none;
+    }
+
+    /* Modal styling */
+    .modal-header,
+    .modal-body {
+      background-color: #202020;
+      color: white;
+    }
+
+    .modal-footer {
+      background-color: #121212;
+      color: #ccc;
+    }
+
+    .form-control {
+      background-color: #333;
+      border: 1px solid #555;
+      color: white;
+    }
+
+    /* Tabs buttons */
+    .auth-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .auth-tab {
+      cursor: pointer;
+      padding: 10px 25px;
+      background-color: #333;
+      border: 1px solid #555;
+      color: #ccc;
+      margin: 0 5px;
+      border-radius: 5px 5px 0 0;
+      user-select: none;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+
+    .auth-tab.active {
+      background-color: #e50914;
+      color: white;
+      border-bottom: none;
+    }
+
+    /* Image grid for charger gallery */
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
+    .image-grid img {
+      width: 100%;
+      border-radius: 10px;
+      border: 2px solid #555;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .image-grid img:hover {
+      transform: scale(1.05);
+      border-color: #facc15;
+    }
+  </style>
+</head>
+
+<body onload="$('#authModal').modal('show')">
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <a href="#about">About</a>
+    <a href="#stations">Stations</a>
+    <a href="#ports">Charging Ports</a>
+    <a href="#services"> STATIONS & ROUTE TRACKER</a>
+    <a href="#feedback">Feedback</a>
+    <a href="#gallery">Charger Gallery</a>
+    <a href="#contact">Contact</a>
+    <a href="#" id="login-link" style="padding: 12px 16px; text-decoration: none; font-size: 18px; color: #ddd; display: block; cursor: pointer; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#575757'; this.style.color='white';" onmouseout="this.style.backgroundColor=''; this.style.color='#ddd';">Login</a>
+
+  <a href="#" id="signup-link" style="padding: 12px 16px; text-decoration: none; font-size: 18px; color: #ddd; display: block; cursor: pointer; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#575757'; this.style.color='white';" onmouseout="this.style.backgroundColor=''; this.style.color='#ddd';">Sign Up</a>
+  </div>
+  <div id="message" style="margin-left: 240px; padding: 20px; font-size: 22px; color: green; font-weight: bold; min-height: 30px;">
+  <!-- Messages like Welcome back or Thanks will appear here -->
+</div>
+<!-- Login Modal -->
+<div id="login-modal" style="display:none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+  <div style="background-color: rgb(21, 127, 189); margin: 10% auto; padding: 20px; border-radius: 8px; width: 320px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative;">
+    <span id="login-close" style="position: absolute; top: 8px; right: 12px; font-size: 22px; font-weight: bold; color: #aaa; cursor: pointer;" onmouseover="this.style.color='#000';" onmouseout="this.style.color='#aaa';">&times;</span>
+    <h2 style="margin-top:0; margin-bottom:15px; text-align:center;">Login</h2>
+    <form id="login-form">
+      <label for="login-email" style="display:block; margin:10px 0 5px;">Email</label>
+      <input type="email" id="login-email" required placeholder="Enter your email" style="width: 100%; padding: 8px 10px; margin-bottom:15px; border: 1px solid #ccc; border-radius: 4px;" />
+      <label for="login-password" style="display:block; margin:10px 0 5px;">Password</label>
+      <input type="password" id="login-password" required placeholder="Enter your password" style="width: 100%; padding: 8px 10px; margin-bottom:15px; border: 1px solid #ccc; border-radius: 4px;" />
+      <button type="submit" style="width: 100%; padding: 10px; background-color: #111; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;" onmouseover="this.style.backgroundColor='#444';" onmouseout="this.style.backgroundColor='#111';">Login</button>
+    </form>
+  </div>
+</div>
+
+<!-- Sign Up Modal -->
+<div id="signup-modal" style="display:none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+  <div style="background-color: rgb(21, 127, 189); margin: 10% auto; padding: 20px; border-radius: 8px; width: 320px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative;">
+    <span id="signup-close" style="position: absolute; top: 8px; right: 12px; font-size: 22px; font-weight: bold; color: #aaa; cursor: pointer;" onmouseover="this.style.color='#000';" onmouseout="this.style.color='#aaa';">&times;</span>
+    <h2 style="margin-top:0; margin-bottom:15px; text-align:center;">Sign Up</h2>
+    <form id="signup-form">
+      <label for="signup-name" style="display:block; margin:10px 0 5px;">Name</label>
+      <input type="text" id="signup-name" required placeholder="Your name" style="width: 100%; padding: 8px 10px; margin-bottom:15px; border: 1px solid #ccc; border-radius: 4px;" />
+      <label for="signup-email" style="display:block; margin:10px 0 5px;">Email</label>
+      <input type="email" id="signup-email" required placeholder="Enter your email" style="width: 100%; padding: 8px 10px; margin-bottom:15px; border: 1px solid #ccc; border-radius: 4px;" />
+      <label for="signup-password" style="display:block; margin:10px 0 5px;">Password</label>
+      <input type="password" id="signup-password" required placeholder="Create password" style="width: 100%; padding: 8px 10px; margin-bottom:15px; border: 1px solid #ccc; border-radius: 4px;" />
+      <button type="submit" style="width: 100%; padding: 10px; background-color: #111; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;" onmouseover="this.style.backgroundColor='#444';" onmouseout="this.style.backgroundColor='#111';">Sign Up</button>
+    </form>
+  </div>
+</div>
+
+
+  <div class="main">
+
+    <!-- Welcome -->
+    <div class="section" id="welcome">
+      <h2>Welcome to SmartCharge</h2>
+      <div class="row">
+        <div class="col-md-6 order-md-2">
+          <img src="pics/p1.jpg" alt="EV Image" />
+        </div>
+        <div class="col-md-6 order-md-1">
+          <p>
+            Electric vehicles are reshaping the future of mobility by offering
+            a cleaner, quieter, and more efficient driving experience. With
+            instant torque and low maintenance, EVs are not only good for the
+            environment but also a delight to drive.
+          </p>
+          <p>
+            Whether you're at home, at work, or on the go, charging your
+            vehicle has never been easier. Our network of smart charging
+            stations ensures you're always powered up and ready to ride.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="section" id="about">
+      <h2>About Us</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <img src="pics/p2.jpg" alt="About" />
+        </div>
+        <div class="col-md-6">
+          <p>
+            We are a next-generation EV charging network focused on
+            accessibility, reliability, and speed. Our stations are equipped
+            with intelligent systems that adapt to vehicle types, optimize
+            energy usage, and support both AC and DC connectors.
+          </p>
+          <p>
+            Discover nearby stations, navigate easily, and enjoy the comfort
+            of always being within reach of a charge.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stations -->
+    <div class="section" id="stations">
+      <h2>Our Stations</h2>
+      <div class="row">
+        <div class="col-md-6 order-md-2">
+          <img src="pics/p3.jpg" alt="Stations" />
+        </div>
+        <div class="col-md-6 order-md-1">
+          <ul>
+            <li><strong>High-Powered Charging:</strong> Suitable for long-distance travelers.</li>
+            <li><strong>Retail & Business Charging:</strong> Recharge while you shop or work.</li>
+            <li><strong>Street Charging:</strong> Convenient access for urban drivers.</li>
+            <li><strong>Home Stations:</strong> Charge privately at night, at your comfort.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ports -->
+    <div class="section" id="ports">
+      <h2>Available Charging Ports</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <img src="pics/p4.jpg" alt="Charging Ports" />
+        </div>
+        <div class="col-md-6">
+          <p>
+            <strong>Level 1:</strong> Basic home chargers offering 4–5 miles of
+            range per hour. Ideal for overnight charging.
+          </p>
+          <p>
+            <strong>Level 2:</strong> Faster charging for residential and public
+            spots, providing 20–65 miles per hour.
+          </p>
+          <p>
+            <strong>DC Fast Chargers:</strong> For highway stops, delivering
+            80% battery in under 30 minutes.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Destination Tracker (formerly Route Planner) -->
+    <div class="section" id="services">
+      <h2> STATIONS & ROUTE TRACKER</h2>
+                                  <div class="col-lg-4">
+                                <svg class="bd-placeholder-img rounded-circle" width="25" height="155"
+                                    xmlns="http://www.w3.org/2000/svg" src="logo.png" role="img"
+                                    aria-label="Placeholder: 140x140" preserveAspectRatio="xMidYMid slice"
+                                    focusable="false"></svg><img src="pics/p5.jpg">
+                                <h4><strong>Search stations</strong></h4>
+                                <p class="text">You can now search nearby charging stations from your current locations and can also
+                                    see how many charging slots are available at that place.</p>
+                                <p><a class="btn btn-info" href="ev_search.html">Search Stations</a></p>
+                            </div><!-- /.col-lg-4 -->
+      <div class="row text-center">
+        <div class="col-md-4 mx-auto">
+          <img
+            src="pics/p6.jpg"
+            class="img-fluid mb-2"
+            alt="Destination Tracker"
+          />
+          <h5>Plan your journey with optimal charging stops.</h5>
+          <a class="btn btn-info" href="ev_routing.html">Find Route</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Section -->
+    <div class="section" id="feedback">
+      <h2>Feedback</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <img
+            src="pics/Untitled design.jpg"
+            alt="Feedback"
+            class="img-fluid rounded mb-3"
+          />
+        </div>
+        <div class="col-md-6">
+          <form id="feedbackForm">
+            <div class="form-group">
+              <label for="feedbackName">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="feedbackName"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="feedbackEmail">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="feedbackEmail"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="feedbackMessage">Message</label>
+              <textarea
+                class="form-control"
+                id="feedbackMessage"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-info">Submit Feedback</button>
+          </form>
+          <div id="feedbackResponse" class="mt-3" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charger Image Gallery -->
+    <div class="section" id="gallery">
+      <h2>Charger Gallery</h2>
+      <div class="image-grid" id="imageGrid">
+        <!-- Images will be inserted by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="section" id="contact">
+      <h2>Contact</h2>
+      <p>Email: contactus</p>
+      <p>Phone: 0-9</p>
+      <p>Address: random </p>
+    </div>
+  </div>
+
+  <!-- Login / Signup Modal -->
+  <div
+    class="modal fade"
+    id="authModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="authModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="authModalLabel" class="modal-title">User Authentication</h5>
+          <button
+            type="button"
+            class="close text-white"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="auth-tabs">
+            <div
+              class="auth-tab active"
+              id="loginTab"
+              onclick="showAuthForm('login')"
+            >
+              Login
+            </div>
+            <div
+              class="auth-tab"
+              id="signupTab"
+              onclick="showAuthForm('signup')"
+            >
+              Signup
+            </div>
+          </div>
+
+          <!-- Login Form -->
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="loginEmail">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="loginEmail"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="loginPassword"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-info btn-block">
+              Login
+            </button>
+          </form>
+
+          <!-- Signup Form -->
+          <form id="signupForm" style="display: none;">
+            <div class="form-group">
+              <label for="signupName">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="signupName"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="signupEmail">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="signupEmail"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="signupPassword">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="signupPassword"
+                placeholder="Create a password"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-info btn-block">
+              Signup
+            </button>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <small id="userCountText">Total Registered Users: 0</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Required scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+  ></script>
+  <script
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+  ></script>
+
+  <script>
+    // Show Login or Signup form in modal
+    function showAuthForm(formName) {
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const loginTab = document.getElementById("loginTab");
+      const signupTab = document.getElementById("signupTab");
+
+      if (formName === "login") {
+        loginForm.style.display = "block";
+        signupForm.style.display = "none";
+        loginTab.classList.add("active");
+        signupTab.classList.remove("active");
+      } else {
+        loginForm.style.display = "none";
+        signupForm.style.display = "block";
+        loginTab.classList.remove("active");
+        signupTab.classList.add("active");
+      }
+    }
+
+    // LocalStorage user management helpers
+    function getUsers() {
+      const usersJSON = localStorage.getItem("users");
+      return usersJSON ? JSON.parse(usersJSON) : [];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+
+    // Update registered user count display in modal footer
+    function updateUserCount() {
+      const count = getUsers().length;
+      document.getElementById("userCountText").innerText =
+        "Total Registered Users: " + count;
+    }
+
+    // Signup form submit handler
+    document.getElementById("signupForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+      const password = document.getElementById("signupPassword").value;
+
+      if (!name || !email || !password) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const users = getUsers();
+
+      if (users.some((user) => user.email === email)) {
+        alert(
+          "User with this email already exists. Please login or use a different email."
+        );
+        return;
+      }
+
+      const newUser = { name, email, password };
+      users.push(newUser);
+      saveUsers(users);
+
+      alert("Sign up successful! You can now log in.");
+
+      document.getElementById("signupForm").reset();
+
+      showAuthForm("login");
+      updateUserCount();
+    });
+
+    // Login form submit handler
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("loginPassword").value;
+
+      if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+      }
+
+      const users = getUsers();
+
+      const user = users.find(
+        (user) => user.email === email && user.password === password
+      );
+
+      if (user) {
+        alert(`Welcome back, ${user.name}! You are now logged in.`);
+
+        // Close modal
+        $("#authModal").modal("hide");
+
+        // Optionally: show user name on page or unlock features
+      } else {
+        alert("Invalid email or password. Please try again.");
+      }
+    });
+
+    updateUserCount();
+
+    // Feedback form submission
+    document
+      .getElementById("feedbackForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById("feedbackName").value.trim();
+        const email = document.getElementById("feedbackEmail").value.trim();
+        const message = document.getElementById("feedbackMessage").value.trim();
+
+        if (!name || !email || !message) {
+          alert("Please fill all feedback fields.");
+          return;
+        }
+
+        // For demo, just show a thank you message and reset form
+        const responseDiv = document.getElementById("feedbackResponse");
+        responseDiv.style.display = "block";
+        responseDiv.style.color = "#facc15";
+        responseDiv.textContent = `Thank you for your feedback, ${name}!`;
+
+        this.reset();
+      });
+
+    // Charger images for gallery
+    const chargerImages = [
+      "pics/p8.jpeg",
+      "pics/p1.jpg",
+      
+      "pics/p10.jpg",
+      
+      "pics/p2.jpg",
+      "pics/p7.jpeg",
+      "pics/p11.jpg",
+      "pics/p12.jpg",
+    ];
+
+    const imageGrid = document.getElementById("imageGrid");
+
+    chargerImages.forEach((src) => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "EV Charger";
+      imageGrid.appendChild(img);
+    });
+  </script>
+  <script>
+  const loginLink = document.getElementById('login-link');
+  const signupLink = document.getElementById('signup-link');
+  const loginModal = document.getElementById('login-modal');
+  const signupModal = document.getElementById('signup-modal');
+  const loginClose = document.getElementById('login-close');
+  const signupClose = document.getElementById('signup-close');
+  const messageDiv = document.getElementById('message');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+
+  loginLink.onclick = e => {
+    e.preventDefault();
+    loginModal.style.display = 'block';
+    messageDiv.textContent = '';
+  };
+
+  signupLink.onclick = e => {
+    e.preventDefault();
+    signupModal.style.display = 'block';
+    messageDiv.textContent = '';
+  };
+
+  loginClose.onclick = () => loginModal.style.display = 'none';
+  signupClose.onclick = () => signupModal.style.display = 'none';
+
+  window.onclick = e => {
+    if (e.target === loginModal) loginModal.style.display = 'none';
+    if (e.target === signupModal) signupModal.style.display = 'none';
+  };
+
+  loginForm.onsubmit = e => {
+    e.preventDefault();
+    loginModal.style.display = 'none';
+    messageDiv.textContent = 'Welcome back';
+  };
+
+  signupForm.onsubmit = e => {
+    e.preventDefault();
+    signupModal.style.display = 'none';
+    messageDiv.textContent = 'Thanks for registering';
+  };
+</script>
+</body>
+</html>
